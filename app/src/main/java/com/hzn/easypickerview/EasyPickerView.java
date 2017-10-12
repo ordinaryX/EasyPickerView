@@ -377,11 +377,15 @@ public class EasyPickerView extends View {
     public void moveTo(int index) {
         if (index < 0 || index >= dataList.size() || curIndex == index)
             return;
+		/**
+         *  (日期选择)暂时注销，scroller.forceFinished(true);期初加上是为了防止重复设置moveTo，<br/>
+         *  现在需求功能中不存在同一pickerview的重复滑动。<br/>
+         *  此时加上后弊端：后一个pickerview设置moveTo后，会把上一个的滑动未结束的pickerview强制结束，造成无法停留在目标值<br/>
+         */
+//        if (!scroller.isFinished())
+//            scroller.forceFinished(true);
 
-        if (!scroller.isFinished())
-            scroller.forceFinished(true);
-
-        finishScroll();
+//        finishScroll();
 
         int dy = 0;
         int centerPadding = textHeight + textPadding;
