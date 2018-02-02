@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:custom="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,8 +10,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.hzn.easypickerview.MainActivity"
-    >
+    tools:context="com.hzn.easypickerview.MainActivity">
 
     <TextView
         android:id="@+id/tv"
@@ -20,16 +18,14 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="30dp"
         android:textColor="#8f8f8f"
-        android:textSize="20sp"
-        />
+        android:textSize="20sp" />
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
-        <com.hzn.easypickerview.EasyPickerView
+        <com.hzn.easypickerview.HPickerView
             android:id="@+id/epv_h"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -41,8 +37,7 @@
             custom:epvTextMaxScale="2.0"
             custom:epvTextMinAlpha="0.35"
             custom:epvTextPadding="10dp"
-            custom:epvTextSize="30sp"
-            />
+            custom:epvTextSize="30sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -51,24 +46,23 @@
             android:layout_marginTop="70dp"
             android:text="h"
             android:textColor="#4aa4a4"
-            android:textSize="20sp"
-            />
+            android:textSize="20sp" />
 
-        <com.hzn.easypickerview.EasyPickerView
+        <com.hzn.easypickerview.HPickerView
             android:id="@+id/epv_m"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="10dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
+            android:visibility="gone"
             custom:epvMaxShowNum="3"
             custom:epvRecycleMode="false"
             custom:epvTextColor="#e98d3c"
             custom:epvTextMaxScale="2.0"
             custom:epvTextMinAlpha="0.35"
             custom:epvTextPadding="10dp"
-            custom:epvTextSize="30sp"
-            />
+            custom:epvTextSize="30sp" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -78,7 +72,7 @@
             android:text="m"
             android:textColor="#e98d3c"
             android:textSize="20sp"
-            />
+            android:visibility="gone" />
     </LinearLayout>
 
     <LinearLayout
@@ -86,8 +80,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
         android:gravity="center"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <EditText
             android:id="@+id/et_h"
@@ -96,8 +89,7 @@
             android:hint="h"
             android:inputType="numberSigned"
             android:textColor="#4aa4a4"
-            android:textColorHint="#dedede"
-            />
+            android:textColorHint="#dedede" />
 
         <Button
             android:id="@+id/btn_to_h"
@@ -106,8 +98,7 @@
             android:layout_marginLeft="10dp"
             android:background="#4aa4a4"
             android:text="move to"
-            android:textColor="#ffffff"
-            />
+            android:textColor="#ffffff" />
 
         <Button
             android:id="@+id/btn_by_h"
@@ -117,8 +108,7 @@
             android:background="#4aa4a4"
             android:minHeight="0dp"
             android:text="move by"
-            android:textColor="#ffffff"
-            />
+            android:textColor="#ffffff" />
     </LinearLayout>
 
     <LinearLayout
@@ -126,8 +116,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:gravity="center"
-        android:orientation="horizontal"
-        >
+        android:orientation="horizontal">
 
         <EditText
             android:id="@+id/et_m"
@@ -136,8 +125,7 @@
             android:hint="m"
             android:inputType="numberSigned"
             android:textColor="#4aa4a4"
-            android:textColorHint="#dedede"
-            />
+            android:textColorHint="#dedede" />
 
         <Button
             android:id="@+id/btn_to_m"
@@ -146,8 +134,7 @@
             android:layout_marginLeft="10dp"
             android:background="#e98d3c"
             android:text="move to"
-            android:textColor="#ffffff"
-            />
+            android:textColor="#ffffff" />
 
         <Button
             android:id="@+id/btn_by_m"
@@ -156,7 +143,6 @@
             android:layout_marginLeft="10dp"
             android:background="#e98d3c"
             android:text="move by"
-            android:textColor="#ffffff"
-            />
+            android:textColor="#ffffff" />
     </LinearLayout>
 </LinearLayout>

@@ -15,8 +15,8 @@ public class MainActivity extends AppCompatActivity {
     private int hour;
     private int minute;
     private TextView tv;
-    private EasyPickerView epvH;
-    private EasyPickerView epvM;
+    private HPickerView epvH;
+    private HPickerView epvM;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,13 +36,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initHours() {
-        epvH = (EasyPickerView) findViewById(R.id.epv_h);
+        epvH = (HPickerView) findViewById(R.id.epv_h);
         final ArrayList<String> hDataList = new ArrayList<>();
-        for (int i = 0; i < 24; i++)
+        for (int i = 0; i < 7; i++)
             hDataList.add("" + i);
 
         epvH.setDataList(hDataList);
-        epvH.setOnScrollChangedListener(new EasyPickerView.OnScrollChangedListener() {
+        epvH.setOnScrollChangedListener(new HPickerView.OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int curIndex) {
                 hour = Integer.parseInt(hDataList.get(curIndex));
@@ -58,13 +58,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initMinutes() {
-        epvM = (EasyPickerView) findViewById(R.id.epv_m);
+        epvM = (HPickerView) findViewById(R.id.epv_m);
         final ArrayList<String> dataList2 = new ArrayList<>();
         for (int i = 0; i < 60; i++)
             dataList2.add("" + i);
 
         epvM.setDataList(dataList2);
-        epvM.setOnScrollChangedListener(new EasyPickerView.OnScrollChangedListener() {
+        epvM.setOnScrollChangedListener(new HPickerView.OnScrollChangedListener() {
             @Override
             public void onScrollChanged(int curIndex) {
                 minute = Integer.parseInt(dataList2.get(curIndex));
