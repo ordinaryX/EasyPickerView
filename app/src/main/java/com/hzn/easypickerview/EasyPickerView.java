@@ -303,7 +303,7 @@ public class EasyPickerView extends View {
 
         // 计算回弹的距离
         bounceDistance = offsetIndex * centerPadding - offsetY;
-        offsetY += bounceDistance;
+        offsetY = offsetIndex * centerPadding;
 
         // 更新
         if (null != onScrollChangedListener)

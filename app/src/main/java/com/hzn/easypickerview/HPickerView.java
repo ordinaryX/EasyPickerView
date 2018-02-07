@@ -19,7 +19,7 @@ import java.util.ArrayList;
 
 /**
  * @author hyx
- * @description
+ * @description 横向滑动选择。问题：会由于字体大小、显示数量多少、屏幕大小而造成文字重叠。
  * @date 2018/2/1.
  */
 
@@ -33,10 +33,6 @@ public class HPickerView extends View {
      * 颜色，默认Color.BLACK
      */
     private int textColor;
-    /**
-     * 文字之间的间隔，默认10dp
-     */
-    private int textPadding;
     /**
      * 文字最大放大比例，默认2.0f
      */
@@ -53,7 +49,9 @@ public class HPickerView extends View {
      * 正常状态下最多显示几个文字，默认3（偶数时，边缘的文字会截断）
      */
     private int maxShowNum;
-
+    /**
+     * 文字画笔
+     */
     private TextPaint textPaint;
     /**
      * 文字测量
@@ -61,8 +59,17 @@ public class HPickerView extends View {
     private Paint.FontMetrics fm;
 
     private Scroller scroller;
+    /**
+     * 滑动速度测量
+     */
     private VelocityTracker velocityTracker;
+    /**
+     * 屏幕最小滑动速度
+     */
     private int minimumVelocity;
+    /**
+     * 屏幕最大滑动速度
+     */
     private int maximumVelocity;
     /**
      * 系统所能识别的滑动最小距离
@@ -82,50 +89,47 @@ public class HPickerView extends View {
      */
     private int cy;
     /**
-     * 文字最大宽度
+     * <br>文字最大宽度<br/>
+     * <br>这里没实际用到（考虑是否可根据这个数值计算文字是否重叠，进而缩小字体大小到不重叠）<br/>
      */
     private float maxTextWidth;
     /**
-     * 文字高度
+     * 文字可绘制高度
      */
     private int textHeight;
     /**
-     * 实际内容宽度
+     * 按下时的x坐标
      */
-    private int contentWidth;
+    private float downX;
     /**
-     * 实际内容高度
+     * 本次滑动的x坐标偏移值
      */
-    private int contentHeight;
-
+    private float offsetX;
     /**
-     * 按下时的y坐标
+     * 在fling之前的offsetX
      */
-    private float downY;
-    /**
-     * 本次滑动的y坐标偏移值
-     */
-    private float offsetY;
-    /**
-     * 在fling之前的offsetY
-     */
-    private float oldOffsetY;
+    private float oldOffsetX;
     /**
      * 当前选中项<br/>
      * curIndex 在 setDataList() 方法中第一次初始化0
      */
     private int curIndex;
-    /** 偏移项 */
-    private int offsetIndex;
-
     /**
-     * 回弹距离
+     * 偏移索引数
      */
-    private float bounceDistance;
+    private int offsetIndex;
     /**
-     * 是否正处于滑动状态
+     * 是否正处于触摸滑动状态
      */
     private boolean isSliding = false;
+    /**
+     * 一个文字所占的画布宽度（包括文字两边的空白）
+     */
+    private int textContentWidth;
+    /**
+     * 禁止文字放大（当设置的文字缩放值不大于 1 时： true）
+     */
+    private boolean forbidScale;
 
     public HPickerView(Context context) {
         this(context, null);
@@ -142,9 +146,11 @@ public class HPickerView extends View {
         textSize = a.getDimensionPixelSize(R.styleable.EasyPickerView_epvTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
         textColor = a.getColor(R.styleable.EasyPickerView_epvTextColor, Color.BLACK);
-        textPadding = a.getDimensionPixelSize(R.styleable.EasyPickerView_epvTextPadding, (int) TypedValue.applyDimension(
-                TypedValue.COMPLEX_UNIT_DIP, 20, getResources().getDisplayMetrics()));
         textMaxScale = a.getFloat(R.styleable.EasyPickerView_epvTextMaxScale, 2.0f);
+        if (textMaxScale <= 1.0f) {
+            textMaxScale = 2.0f;
+            forbidScale = true;
+        }
         textMinAlpha = a.getFloat(R.styleable.EasyPickerView_epvTextMinAlpha, 0.4f);
         isRecycleMode = a.getBoolean(R.styleable.EasyPickerView_epvRecycleMode, true);
         maxShowNum = a.getInteger(R.styleable.EasyPickerView_epvMaxShowNum, 3);
@@ -166,19 +172,15 @@ public class HPickerView extends View {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int mode = MeasureSpec.getMode(widthMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        //在setDataList() 方法中设置/更新 maxTextWidth 的值
+
         //这里必须加上左右的padding,否则xml文件中的padding将失效
-        contentWidth = (int) (maxTextWidth * textMaxScale + getPaddingLeft() + getPaddingRight());
-        if (mode != MeasureSpec.EXACTLY) { // 宽的测量模式: 不是指定宽度 或者 match_parent -> wrap_content
-            width = contentWidth;
-        }
+        textContentWidth = (width - getPaddingLeft() - getPaddingRight()) / maxShowNum;
 
         mode = MeasureSpec.getMode(heightMeasureSpec);//高的测量模式
         int height = MeasureSpec.getSize(heightMeasureSpec);
         textHeight = (int) (fm.bottom - fm.top);
-        contentHeight = textHeight * maxShowNum + textPadding * maxShowNum;
         if (mode != MeasureSpec.EXACTLY) { // wrap_content
-            height = contentHeight + getPaddingTop() + getPaddingBottom();
+            height = textHeight + getPaddingTop() + getPaddingBottom();
         }
 
         cx = width / 2;
@@ -203,22 +205,22 @@ public class HPickerView extends View {
                     scroller.forceFinished(true);
                     finishScroll();
                 }
-                downY = event.getY();
+                downX = event.getX();
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                offsetY = event.getY() - downY;
-                if (isSliding || Math.abs(offsetY) > scaledTouchSlop) {
+                offsetX = event.getX() - downX;
+                if (isSliding || Math.abs(offsetX) > scaledTouchSlop) {
                     isSliding = true;
                     reDraw();
                 }
                 break;
 
             case MotionEvent.ACTION_UP:
-                int scrollYVelocity = 2 * getScrollYVelocity() / 3;
-                if (Math.abs(scrollYVelocity) > minimumVelocity) {
-                    oldOffsetY = offsetY;
-                    scroller.fling(0, 0, 0, scrollYVelocity, 0, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE);
+                int scrollXVelocity = getScrollXVelocity();
+                if (Math.abs(scrollXVelocity) > minimumVelocity) {
+                    oldOffsetX = offsetX;
+                    scroller.fling(0, 0, scrollXVelocity, 0, -Integer.MAX_VALUE, Integer.MAX_VALUE, 0, 0);
                     invalidate();
                 } else {
                     finishScroll();
@@ -226,9 +228,9 @@ public class HPickerView extends View {
 
                 // 没有滑动，则判断点击事件
                 if (!isSliding) {
-                    if (downY < contentHeight / 3)
+                    if (downX < 3 * getMeasuredWidth() / 7)
                         moveBy(-1);
-                    else if (downY > 2 * contentHeight / 3)
+                    else if (downX > 4 * getMeasuredWidth() / 7)
                         moveBy(1);
                 }
 
@@ -242,15 +244,16 @@ public class HPickerView extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         if (null != dataList && dataList.size() > 0) {
+            //注意 裁剪矩形 的坐标，需要用到padding,否则xml中的padding将不准确
             canvas.clipRect(
-                    0,
-                    0,
-                    contentWidth,
-                    contentHeight
+                    getPaddingLeft(),
+                    getPaddingTop(),
+                    getMeasuredWidth() - getPaddingRight(),
+                    getMeasuredHeight() - getPaddingBottom()
             );
             // 绘制文字，从当前中间项往前、后一共绘制maxShowNum个字
             int size = dataList.size();
-            int centerPadding = textHeight + textPadding;
+
             int half = maxShowNum / 2 + 1;//View中间位置显示的 是第几个文字（相对于最大显示数量而言）
             for (int i = -half; i <= half; i++) {
                 int index = curIndex - offsetIndex + i;//curIndex 在 setDataList() 方法中第一次初始化0
@@ -263,27 +266,29 @@ public class HPickerView extends View {
                 }
 
                 if (index >= 0 && index < size) {
-                    // 计算每个字的中间y坐标
-                    int tempY = cy + i * centerPadding;
-                    tempY += offsetY % centerPadding;
+                    // 计算每个字的中间 x 坐标
+                    int tempX = cx + i * textContentWidth;
+                    //滑动偏移时的 x 坐标
+                    tempX += offsetX % textContentWidth;
 
-                    // 根据每个字中间y坐标到cy的距离，计算出scale值
-                    float scale = 1.0f - (1.0f * Math.abs(tempY - cy) / centerPadding);
+                    // 根据每个字中间x坐标到cx的距离，计算出scale值
+                    float offsetValue = (1.0f * Math.abs(tempX - cx) / textContentWidth);
                     //    -1
                     // 根据textMaxScale，计算出tempScale值，即实际text应该放大的倍数，范围 1~textMaxScale
-                    float tempScale = scale * (textMaxScale - 1.0f) + 1.0f;
-                    //        0         -1       1
+                    float tempScale = textMaxScale - offsetValue * (textMaxScale - 1.0f);
+
                     tempScale = tempScale < 1.0f ? 1.0f : tempScale;
                     float tempAlpha = (tempScale - 1) / (textMaxScale - 1);
                     float textAlpha = (1 - textMinAlpha) * tempAlpha + textMinAlpha;
-                    textPaint.setTextSize(textSize * tempScale);
+                    textPaint.setTextSize(forbidScale ? textSize : textSize * tempScale);
+                    textPaint.setColor(Color.rgb((int) ((52 * tempAlpha)), (int) ((146 * tempAlpha)), (int) ((233 * tempAlpha))));
                     textPaint.setAlpha((int) (255 * textAlpha));
 
                     // 绘制
                     Paint.FontMetrics tempFm = textPaint.getFontMetrics();
                     String text = dataList.get(index);
                     float textWidth = textPaint.measureText(text);
-                    canvas.drawText(text, cx - textWidth / 2, tempY - (tempFm.ascent + tempFm.descent) / 2, textPaint);
+                    canvas.drawText(text, tempX - textWidth / 2, (cy - (tempFm.bottom - tempFm.top) / 2) - tempFm.top, textPaint);
                 }
             }
         }
@@ -292,7 +297,8 @@ public class HPickerView extends View {
     @Override
     public void computeScroll() {
         if (scroller.computeScrollOffset()) {
-            offsetY = oldOffsetY + scroller.getCurrY();
+            //fling后，需不断计算滑动的距离
+            offsetX = oldOffsetX + scroller.getCurrX();
 
             if (!scroller.isFinished())//滑动没有停
                 reDraw();
@@ -315,19 +321,18 @@ public class HPickerView extends View {
         }
     }
 
-    private int getScrollYVelocity() {
+    private int getScrollXVelocity() {
         velocityTracker.computeCurrentVelocity(1000, maximumVelocity);
-        int velocity = (int) velocityTracker.getYVelocity();
+        int velocity = (int) velocityTracker.getXVelocity();
         return velocity;
     }
 
     private void reDraw() {
         // curIndex需要偏移的量
         //计算滑动偏移量 是 多少个 文字距离（多少个文字），不到一个的时候，为0个
-        //向上滑动的时候 offsetY 为负值，向下滑动为正值 （所以 offsetIndex正负值同理）
-        //curIndex - i，对应：向上滑动索引增大，向下索引减小
-        int i = (int) (offsetY / (textHeight + textPadding));
-        Log.e("****reDraw()****","curIndex: " + curIndex + " i: " + i);
+        //向左滑动的时候 offsetX 为负值，向右滑动为正值 （所以 offsetIndex正负值同理）
+        //curIndex - i，对应：向左滑动索引增大，向右索引减小
+        int i = (int) (offsetX / textContentWidth);
         if (isRecycleMode || (curIndex - i >= 0 && curIndex - i < dataList.size())) {
             if (offsetIndex != i) {
                 offsetIndex = i;
@@ -343,19 +348,18 @@ public class HPickerView extends View {
 
     private void finishScroll() {
         // 判断结束滑动后应该停留在哪个位置
-        int centerPadding = textHeight + textPadding;
-        float v = offsetY % centerPadding;
-        if (v > 0.5f * centerPadding)
+
+        float v = offsetX % textContentWidth;
+        if (v > 0.5f * textContentWidth)
             ++offsetIndex;
-        else if (v < -0.5f * centerPadding)
+        else if (v < -0.5f * textContentWidth)
             --offsetIndex;
 
         // 重置curIndex
         curIndex = getNowIndex(-offsetIndex);
 
         // 计算回弹的距离
-        bounceDistance = offsetIndex * centerPadding - offsetY;
-        offsetY += bounceDistance;
+        offsetX = offsetIndex * textContentWidth;
 
         // 更新
         if (null != onScrollChangedListener)
@@ -379,14 +383,15 @@ public class HPickerView extends View {
             else if (index > dataList.size() - 1)
                 index = dataList.size() - 1;
         }
+
         return index;
     }
 
     private void reset() {
-        offsetY = 0;
-        oldOffsetY = 0;
         offsetIndex = 0;
-        bounceDistance = 0;
+
+        offsetX = 0;
+        oldOffsetX = 0;
     }
 
     /**
@@ -439,28 +444,28 @@ public class HPickerView extends View {
 
 //        finishScroll();
 
-        int dy = 0;
-        int centerPadding = textHeight + textPadding;
+        int dx = 0;
+
         if (!isRecycleMode) {
-            dy = (curIndex - index) * centerPadding;
+            dx = (curIndex - index) * textContentWidth;
         } else {
             int offsetIndex = curIndex - index;
-            int d1 = Math.abs(offsetIndex) * centerPadding;
-            int d2 = (dataList.size() - Math.abs(offsetIndex)) * centerPadding;
+            int d1 = Math.abs(offsetIndex) * textContentWidth;
+            int d2 = (dataList.size() - Math.abs(offsetIndex)) * textContentWidth;
 
             if (offsetIndex > 0) {
                 if (d1 < d2)
-                    dy = d1; // ascent
+                    dx = d1; // ascent
                 else
-                    dy = -d2; // descent
+                    dx = -d2; // descent
             } else {
                 if (d1 < d2)
-                    dy = -d1; // descent
+                    dx = -d1; // descent
                 else
-                    dy = d2; // ascent
+                    dx = d2; // ascent
             }
         }
-        scroller.startScroll(0, 0, 0, dy, 500);
+        scroller.startScroll(0, 0, dx, 0, 500);
         invalidate();
     }
 
