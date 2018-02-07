@@ -18,11 +18,10 @@ import android.widget.Scroller;
 import java.util.ArrayList;
 
 /**
- * @author hyx
- * @description 横向滑动选择。问题：会由于字体大小、显示数量多少、屏幕大小而造成文字重叠。
- * @date 2018/2/1.
+ * 横向滑动选择。<br/>
+ * 相比纵向滑动的，增加可编辑两边未选中文字颜色的属性<br/>
+ * 问题：会由于字体大小、显示数量多少、屏幕大小而造成文字重叠。<br/>
  */
-
 public class HPickerView extends View {
 
     /**
@@ -30,9 +29,13 @@ public class HPickerView extends View {
      */
     private int textSize;
     /**
-     * 颜色，默认Color.BLACK
+     * 选中的颜色，默认Color.BLACK
      */
     private int textColor;
+    /**
+     * 未选中的颜色，默认Color.BLACK
+     */
+    private int unTextColor;
     /**
      * 文字最大放大比例，默认2.0f
      */
@@ -131,6 +134,14 @@ public class HPickerView extends View {
      */
     private boolean forbidScale;
 
+    private int colorR;
+    private int colorG;
+    private int colorB;
+
+    private int uColorR;
+    private int uColorG;
+    private int uColorB;
+
     public HPickerView(Context context) {
         this(context, null);
     }
@@ -146,15 +157,25 @@ public class HPickerView extends View {
         textSize = a.getDimensionPixelSize(R.styleable.EasyPickerView_epvTextSize, (int) TypedValue.applyDimension(
                 TypedValue.COMPLEX_UNIT_SP, 16, getResources().getDisplayMetrics()));
         textColor = a.getColor(R.styleable.EasyPickerView_epvTextColor, Color.BLACK);
+        unTextColor = a.getColor(R.styleable.EasyPickerView_epvUnTextColor, Color.BLACK);
         textMaxScale = a.getFloat(R.styleable.EasyPickerView_epvTextMaxScale, 2.0f);
-        if (textMaxScale <= 1.0f) {
-            textMaxScale = 2.0f;
-            forbidScale = true;
-        }
         textMinAlpha = a.getFloat(R.styleable.EasyPickerView_epvTextMinAlpha, 0.4f);
         isRecycleMode = a.getBoolean(R.styleable.EasyPickerView_epvRecycleMode, true);
         maxShowNum = a.getInteger(R.styleable.EasyPickerView_epvMaxShowNum, 3);
         a.recycle();
+
+        if (textMaxScale <= 1.0f) {
+            textMaxScale = 2.0f;
+            forbidScale = true;
+        }
+
+        uColorR = (unTextColor & 0xff0000) >> 16;
+        uColorG = (unTextColor & 0x00ff00) >> 8;
+        uColorB = unTextColor & 0x0000ff;
+
+        colorR = (textColor & 0xff0000) >> 16;
+        colorG = (textColor & 0x00ff00) >> 8;
+        colorB = textColor & 0x0000ff;
 
         textPaint = new TextPaint();
         textPaint.setColor(textColor);
@@ -272,16 +293,16 @@ public class HPickerView extends View {
                     tempX += offsetX % textContentWidth;
 
                     // 根据每个字中间x坐标到cx的距离，计算出scale值
-                    float offsetValue = (1.0f * Math.abs(tempX - cx) / textContentWidth);
+                    float offsetScale = (1.0f * Math.abs(tempX - cx) / textContentWidth);
                     //    -1
                     // 根据textMaxScale，计算出tempScale值，即实际text应该放大的倍数，范围 1~textMaxScale
-                    float tempScale = textMaxScale - offsetValue * (textMaxScale - 1.0f);
+                    float tempScale = textMaxScale - offsetScale * (textMaxScale - 1.0f);
 
                     tempScale = tempScale < 1.0f ? 1.0f : tempScale;
                     float tempAlpha = (tempScale - 1) / (textMaxScale - 1);
                     float textAlpha = (1 - textMinAlpha) * tempAlpha + textMinAlpha;
                     textPaint.setTextSize(forbidScale ? textSize : textSize * tempScale);
-                    textPaint.setColor(Color.rgb((int) ((52 * tempAlpha)), (int) ((146 * tempAlpha)), (int) ((233 * tempAlpha))));
+                    textPaint.setColor(Color.rgb((int) (uColorR + (colorR - uColorR) * tempAlpha), (int) (uColorG + (colorG - uColorG) * tempAlpha), (int) (uColorB + (colorB - uColorB) * tempAlpha)));
                     textPaint.setAlpha((int) (255 * textAlpha));
 
                     // 绘制

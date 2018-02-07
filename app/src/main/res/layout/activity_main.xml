@@ -27,24 +27,25 @@
             android:id="@+id/epv_h"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            custom:epvMaxShowNum="5"
             android:background="#B0C4DE"
-            custom:epvRecycleMode="false"
-            custom:epvTextColor="#3492e9"
+            custom:epvMaxShowNum="5"
+            custom:epvRecycleMode="true"
+            custom:epvTextColor="#7452e9"
+            custom:epvUnTextColor="#000000"
             custom:epvTextMaxScale="1.5"
-            custom:epvTextMinAlpha="0.15"
+            custom:epvTextMinAlpha="0.35"
             custom:epvTextSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center"
             android:layout_marginLeft="5dp"
             android:layout_marginTop="70dp"
             android:text="h"
-            android:visibility="gone"
-            android:layout_gravity="center"
             android:textColor="#4aa4a4"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:visibility="gone" />
 
         <com.hzn.easypickerview.EasyPickerView
             android:id="@+id/epv_m"

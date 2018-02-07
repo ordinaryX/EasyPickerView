@@ -3,6 +3,9 @@
     <declare-styleable name="EasyPickerView">
         <attr name="epvTextSize" format="dimension"/>
         <attr name="epvTextColor" format="color"/>
+        <!-- 选中文字颜色 -->
+        <attr name="epvUnTextColor" format="color"/>
+        <!-- 两边未选中文字颜色 -->
         <attr name="epvTextPadding" format="dimension"/>
         <attr name="epvTextMaxScale" format="float"/>
         <attr name="epvTextMinAlpha" format="float"/>
