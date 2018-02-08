@@ -21,42 +21,40 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal">
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
         <com.hzn.easypickerview.HPickerView
             android:id="@+id/epv_h"
             android:layout_width="match_parent"
             android:layout_height="50dp"
-            android:background="#B0C4DE"
+            android:background="#f7f7f7"
             custom:epvMaxShowNum="5"
             custom:epvRecycleMode="true"
-            custom:epvTextColor="#7452e9"
-            custom:epvUnTextColor="#000000"
+            custom:epvTextColor="#3492e9"
+            custom:epvUnTextColor="#cccccc"
             custom:epvTextMaxScale="1.5"
-            custom:epvTextMinAlpha="0.35"
+            custom:epvTextMinAlpha="1.0"
             custom:epvTextSize="18sp" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="70dp"
             android:text="h"
             android:textColor="#4aa4a4"
             android:textSize="20sp"
-            android:visibility="gone" />
+            android:visibility="visible" />
 
         <com.hzn.easypickerview.EasyPickerView
             android:id="@+id/epv_m"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="10dp"
             android:paddingLeft="15dp"
             android:paddingRight="15dp"
-            android:visibility="gone"
+            android:visibility="visible"
             custom:epvMaxShowNum="3"
-            custom:epvRecycleMode="false"
+            custom:epvRecycleMode="true"
             custom:epvTextColor="#e98d3c"
             custom:epvTextMaxScale="2.0"
             custom:epvTextMinAlpha="0.35"
@@ -66,12 +64,10 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
-            android:layout_marginTop="70dp"
             android:text="m"
             android:textColor="#e98d3c"
             android:textSize="20sp"
-            android:visibility="gone" />
+            android:visibility="visible" />
     </LinearLayout>
 
     <LinearLayout

@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
     private void initHours() {
         epvH = (HPickerView) findViewById(R.id.epv_h);
         final ArrayList<String> hDataList = new ArrayList<>();
-        for (int i = 2013; i < 2024; i++)
+        for (int i = 0; i < 24; i++)
             hDataList.add("" + i);
 
         epvH.setDataList(hDataList);
